@@ -2,8 +2,7 @@ import numpy as np
 
 def total_dissimilarity(x):
     # Fo
-    mean = np.mean(x)
-    return np.sum(np.abs(x - mean)**2)
+    return np.var(x)*np.shape(x)[0]
 
 def mean_intraclass_dispersion(set):
     # sigma_j
@@ -43,3 +42,47 @@ def total_interclass_dispersion(setList):
 
         Fout += numElements*(np.abs(mean - globalMean)**2)
     return Fout
+
+def dist_matrix(set1, set2):
+    set1Len = np.shape(set1)[0]
+    set2Len = np.shape(set2)[0]
+    distMatrix = np.zeros([set1Len, set2Len])
+    for i in range(set1Len):
+        for j in range(set2Len):
+            if i != j:
+                argument = np.reshape(set1[i]-set2[j], 1)
+                distMatrix[i,j] = np.linalg.norm(argument, ord=1)
+    return distMatrix
+
+def find_nearest_neighbor(set1, set2):
+    distMatrix = dist_matrix(set1, set2)
+    mask = (distMatrix != 0)
+    return np.min(distMatrix[mask])
+
+def find_farthest_neighbor(set1, set2):
+    distMatrix = dist_matrix(set1, set2)
+    mask = (distMatrix != 0)
+    return np.max(distMatrix[mask])
+
+def baricenter_distance(set1, set2):
+    return np.abs(np.mean(set1) - np.mean(set2))
+
+def delta_dispersion(set1, set2):
+    set1Len = np.shape(set1)[0]
+    set2Len = np.shape(set2)[0]
+
+    mean1 = np.mean(set1)
+    mean2 = np.mean(set2)
+
+    arg1 = np.abs(mean1 + mean2)**2
+    return arg1*(set1Len*set2Len)/(set1Len+set2Len)
+
+# def delta_dispersion(set1, set2):
+#     '''
+#       Supposedly equivalent formula:
+#       Delta F_ij = F_ij - (F_i + F_j)
+#     '''
+#     F_joint = intraclass_dispersion(np.append(set1, set2))
+#     F1 = intraclass_dispersion(set1)
+#     F2 = intraclass_dispersion(set2)
+#     return F_joint - (F1 + F2)
